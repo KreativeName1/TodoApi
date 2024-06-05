@@ -11,9 +11,9 @@ namespace TodoAPI.Models
     public string Password { get; set; }
     public string Email { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime? CreatedAt { get; set; }
 
-    public List<TodoNote> TodoNotes { get; set; }
+    public List<TodoNote>? TodoNotes { get; set; }
 
 
     public User()
