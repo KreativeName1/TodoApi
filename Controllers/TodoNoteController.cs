@@ -29,6 +29,8 @@ namespace TodoAPI.Controllers
     [HttpPost(Name = "CreateTodoNote")]
     public TodoNote Post([FromBody] TodoNote todoNote)
     {
+      todoNote.CreatedAt = DateTime.Now;
+      todoNote.UpdatedAt = DateTime.Now;
       _connection.TodoNotes.Add(todoNote);
       _connection.SaveChanges();
       return todoNote;
@@ -42,6 +44,7 @@ namespace TodoAPI.Controllers
       existingTodoNote.Content = todoNote.Content;
       existingTodoNote.DueDate = todoNote.DueDate;
       existingTodoNote.IsComplete = todoNote.IsComplete;
+      existingTodoNote.UpdatedAt = DateTime.Now;
       _connection.SaveChanges();
       return existingTodoNote;
     }

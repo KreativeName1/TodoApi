@@ -9,5 +9,9 @@ namespace TodoAPI
     public DbSet<User> Users { get; set; }
 
     public DbSet<TodoNote> TodoNotes { get; set; }
+
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    {
+    }
   }
 }

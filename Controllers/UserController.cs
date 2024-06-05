@@ -29,6 +29,8 @@ namespace TodoAPI.Controllers
     [HttpPost(Name = "CreateUser")]
     public User Post([FromBody] User user)
     {
+      user.CreatedAt = DateTime.Now;
+      Console.WriteLine(user);
       _connection.Users.Add(user);
       _connection.SaveChanges();
       return user;

@@ -74,3 +74,5 @@ C:\Users\dierls\Repos\TodoApi\obj\Debug\net7.0\refint\TodoApi.dll
 C:\Users\dierls\Repos\TodoApi\obj\Debug\net7.0\TodoApi.pdb
 C:\Users\dierls\Repos\TodoApi\obj\Debug\net7.0\TodoApi.genruntimeconfig.cache
 C:\Users\dierls\Repos\TodoApi\obj\Debug\net7.0\ref\TodoApi.dll
+C:\Users\dierls\Repos\TodoApi\bin\Debug\net7.0\MySqlConnector.dll
+C:\Users\dierls\Repos\TodoApi\bin\Debug\net7.0\Pomelo.EntityFrameworkCore.MySql.dll
