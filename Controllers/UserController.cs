@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TodoAPI.Models;
+using BCrypt.Net;
 namespace TodoAPI.Controllers
 {
 
@@ -26,11 +27,25 @@ namespace TodoAPI.Controllers
       return _connection.Users.Find(id);
     }
 
+    // get with email
+    [HttpGet("email/{email}", Name = "GetUserByEmail")]
+    public IActionResult Get(string email)
+    {
+      var user = _connection.Users.FirstOrDefault(u => u.Email == email);
+
+      if (user == null)
+      {
+        return NotFound(new { message = "User not found" });
+      }
+      Console.WriteLine(user);
+      return Ok(user);
+    }
+
+
     [HttpPost(Name = "CreateUser")]
     public User Post([FromBody] User user)
     {
       user.CreatedAt = DateTime.Now;
-      Console.WriteLine(user);
       _connection.Users.Add(user);
       _connection.SaveChanges();
       return user;

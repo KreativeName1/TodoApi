@@ -2,32 +2,19 @@ using Microsoft.AspNetCore.Identity;
 
 namespace TodoAPI.Models
 {
-  public class User
+  public class User : IdentityUser
   {
 
-    public int Id { get; set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public string Password { get; set; }
-    public string Email { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
     public List<TodoNote>? TodoNotes { get; set; }
 
 
-    public User()
-    {
-    }
-
-    public User(string firstName, string lastName, string email)
-    {
-      FirstName = firstName;
-      LastName = lastName;
-      Email = email;
-    }
-
-    public User(string firstName, string lastName, string email, string password)
+    public User(string firstName, string lastName, string password,string email)
     {
       FirstName = firstName;
       LastName = lastName;
@@ -35,9 +22,11 @@ namespace TodoAPI.Models
       Password = password;
     }
 
-    public override string ToString()
+    public User(string firstName, string lastName, string email)
     {
-      return $"User: {FirstName} {LastName} {Email} {Password} {CreatedAt}";
+      FirstName = firstName;
+      LastName = lastName;
+      Email = email;
     }
   }
 }
