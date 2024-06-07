@@ -1,0 +1,21 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "server=SERVER;database=DATABASE;user=USER;password=PASSWORD"
+  },
+  "Jwt": {
+    "Key": "geheim",
+    "Issuer": "http://localhost:5000",
+    "Audience": "http://localhost:5000"
+  },
+  "Redis": {
+    "Host": "localhost",
+    "Port": 6379
+  }
+}
