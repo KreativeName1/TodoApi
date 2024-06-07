@@ -15,7 +15,8 @@
     "Audience": "http://localhost:5000"
   },
   "Redis": {
-    "Host": "localhost",
-    "Port": 6379
+    "ConnectionStrings": {
+      "DefaultConnection": "localhost:6379"
+    }
   }
 }
