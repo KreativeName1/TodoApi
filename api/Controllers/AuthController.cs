@@ -12,7 +12,6 @@ using System.Security.Cryptography;
 public class AuthController : ControllerBase
 {
   private readonly UserManager<User> _userManager;
-  private readonly SignInManager<User> _signInManager;
   private readonly IConfiguration _configuration;
 
   public AuthController(UserManager<User> userManager, IConfiguration configuration)
@@ -196,20 +195,20 @@ public class AuthController : ControllerBase
 
 public class RegisterModel
 {
-  public string FirstName { get; set; }
-  public string LastName { get; set; }
-  public string Email { get; set; }
-  public string Password { get; set; }
+  public string? FirstName { get; set; }
+  public string? LastName { get; set; }
+  public string? Email { get; set; }
+  public string? Password { get; set; }
 }
 
 public class LoginModel
 {
-  public string Email { get; set; }
-  public string Password { get; set; }
+  public string? Email { get; set; }
+  public string? Password { get; set; }
 }
 
 public class TokenModel
 {
-  public string AccessToken { get; set; }
-  public string RefreshToken { get; set; }
+  public string? AccessToken { get; set; }
+  public string? RefreshToken { get; set; }
 }

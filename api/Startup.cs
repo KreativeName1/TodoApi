@@ -1,12 +1,26 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore; // Add this using directive
+using  Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+
+
 using TodoAPI;
 using TodoAPI.Models;
+
+// migrate and update the database
+// dotnet ef migrations add InitialCreate
+// dotnet ef database update
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+
+// Add the Database Context for Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
   options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), new MySqlServerVersion(new Version(8, 0, 26))));
 
@@ -19,17 +33,18 @@ builder.Services.AddControllers().AddJsonOptions(options =>
   options.JsonSerializerOptions.DictionaryKeyPolicy = null;
 });
 
-builder.Services.AddDistributedRedisCache(options =>
+// Add Redis Cache for Session
+builder.Services.AddStackExchangeRedisCache(options =>
 {
-  options.Configuration = builder.Configuration.GetConnectionString("Redis");
-  options.InstanceName = "master";
+  options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+  options.InstanceName = "RedisCache";
 });
-
+// Add Identity for User Management
 builder.Services.AddIdentity<User, IdentityRole>()
   .AddEntityFrameworkStores<ApplicationDbContext>()
   .AddDefaultTokenProviders();
 
-// Add Session
+// Add Session for User Authentication
 builder.Services.AddSession(options =>
 {
   options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -58,6 +73,7 @@ app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 // ONLY FOR DEVELOPMENT PURPOSES
 app.UseMiddleware<RequestLoggingMiddleware>();
