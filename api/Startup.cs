@@ -18,7 +18,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add the Database Context for Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-  options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), new MySqlServerVersion(new Version(8, 0, 26))));
+  options.UseMySql(
+    builder.Configuration.GetConnectionString("MySQLConnection"),
+    new MySqlServerVersion(new Version(5, 7)),
+    mySqlOptions => mySqlOptions.EnableRetryOnFailure()
+  ));
 
 builder.Services.AddControllers();
 
@@ -32,8 +36,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Add Redis Cache for Session
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-  options.Configuration = builder.Configuration.GetValue<string>("Redis:Configuration");
-  options.InstanceName = builder.Configuration.GetValue<string>("Redis:InstanceName");
+  options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
+  options.InstanceName = builder.Configuration.GetValue<string>("RedisName");
 });
 // Add Identity for User Management
 builder.Services.AddIdentity<User, IdentityRole>()

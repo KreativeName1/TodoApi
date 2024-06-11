@@ -9,7 +9,7 @@ namespace TodoAPI.Models
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
     public DateTime? DueDate { get; set; }
-    public int UserId { get; set; } = 0;
+    public User User { get; set; }
 
     public TodoNote()
     {
@@ -17,7 +17,7 @@ namespace TodoAPI.Models
       Content = string.Empty;
     }
 
-    public TodoNote(string title, string content, bool isComplete, DateTime createdAt, DateTime updatedAt, DateTime? dueDate, int userId)
+    public TodoNote(string title, string content, bool isComplete, DateTime createdAt, DateTime updatedAt, DateTime? dueDate)
     {
       Title = title;
       Content = content;
@@ -25,20 +25,18 @@ namespace TodoAPI.Models
       CreatedAt = createdAt;
       UpdatedAt = updatedAt;
       DueDate = dueDate;
-      UserId = userId;
     }
-    public TodoNote(string title, string content, bool isComplete, DateTime? dueDate, int userId)
+    public TodoNote(string title, string content, bool isComplete, DateTime? dueDate)
     {
       Title = title;
       Content = content;
       IsComplete = isComplete;
       DueDate = dueDate;
-      UserId = userId;
     }
 
     public override string ToString()
     {
-      return $"TodoNote: {Title} {Content} {IsComplete} {CreatedAt} {UpdatedAt} {DueDate} {UserId}";
+      return $"TodoNote: {Title} {Content} {IsComplete} {CreatedAt} {UpdatedAt} {DueDate}";
     }
   }
 }

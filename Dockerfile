@@ -10,7 +10,7 @@ ENV PATH="${PATH}:/root/.dotnet/tools"
 
 RUN dotnet restore TodoApi.csproj
 
-#RUN dotnet build
+RUN dotnet build
 
 RUN dotnet ef database update
 
