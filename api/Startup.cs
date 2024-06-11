@@ -13,10 +13,6 @@ using Microsoft.Extensions.Caching.StackExchangeRedis;
 using TodoAPI;
 using TodoAPI.Models;
 
-// migrate and update the database
-// dotnet ef migrations add InitialCreate
-// dotnet ef database update
-
 var builder = WebApplication.CreateBuilder(args);
 
 

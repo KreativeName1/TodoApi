@@ -2,14 +2,14 @@ namespace TodoAPI.Models
 {
   public class TodoNote
   {
-    public string Title { get; set; }
-    public string Content { get; set; }
-    public bool IsComplete { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime UpdatedAt { get; set; }
-    public DateTime? DueDate { get; set; }
-    public int UserId { get; set; }
-    public User? User { get; set; }
+    public int Id { get; set; } = 0;
+    public string Title { get; set; } = "";
+    public string Content { get; set; } = "";
+    public bool IsComplete { get; set; } = false;
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public DateTime UpdatedAt { get; set; } = DateTime.Now;
+    public DateTime? DueDate { get; set; } = null;
+    public int UserId { get; set; } = 0;
 
     public TodoNote()
     {

@@ -5,7 +5,16 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /api
 COPY api/ ./
 
+RUN dotnet tool install --global dotnet-ef --version 8.0.0
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
 RUN dotnet restore TodoApi.csproj
+
+RUN dotnet build
+
+RUN dotnet ef migrations add ver6
+
+RUN dotnet ef database update
 
 RUN dotnet publish -c Release -o out TodoApi.csproj
 
