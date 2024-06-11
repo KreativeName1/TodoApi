@@ -32,8 +32,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Add Redis Cache for Session
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-  options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
-  options.InstanceName = "RedisCache";
+  options.Configuration = builder.Configuration.GetValue<string>("Redis:Configuration");
+  options.InstanceName = builder.Configuration.GetValue<string>("Redis:InstanceName");
 });
 // Add Identity for User Management
 builder.Services.AddIdentity<User, IdentityRole>()
@@ -72,7 +72,7 @@ app.UseAuthorization();
 
 
 // ONLY FOR DEVELOPMENT PURPOSES
-app.UseMiddleware<RequestLoggingMiddleware>();
+//app.UseMiddleware<RequestLoggingMiddleware>();
 
 app.MapControllers();
 

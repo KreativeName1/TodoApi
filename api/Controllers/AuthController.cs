@@ -23,33 +23,38 @@ public class AuthController : ControllerBase
   [HttpPost("register")]
   public async Task<IActionResult> Register(RegisterModel model)
   {
+    // check if the model is correct
+    if (model == null) return BadRequest("Invalid client request");
+    if (string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password) || string.IsNullOrEmpty(model.FirstName) || string.IsNullOrEmpty(model.LastName))
+    {
+      return BadRequest(new { message = "All fields are required" });
+    }
+
     if (ModelState.IsValid)
     {
+      // check if the user already exists
       var existingUser = await _userManager.FindByEmailAsync(model.Email);
       if (existingUser != null)
       {
         return BadRequest(new { message = "User already exists" });
       }
+      // check if the password is correct
       if (model.Password.Length < 8)
       {
         return BadRequest(new { message = "Password must be at least 8 characters long" });
       }
 
+      // create the user
       var user = new User(model.FirstName, model.LastName, model.Email)
       {
         UserName = model.Email,
         CreatedAt = DateTime.UtcNow
       };
 
+      // save the user
       var result = await _userManager.CreateAsync(user, model.Password);
-      if (result.Succeeded)
-      {
-        return Ok();
-      }
-      else
-      {
-        return BadRequest(result.Errors);
-      }
+      if (result.Succeeded) return Ok();
+      else return BadRequest(result.Errors);
     }
 
     return BadRequest(ModelState);
@@ -58,9 +63,18 @@ public class AuthController : ControllerBase
   [HttpPost("login")]
   public async Task<IActionResult> Login([FromBody] LoginModel model)
   {
+    // check if the model is correct
+    if (model == null) return BadRequest("Invalid client request");
+    if (string.IsNullOrEmpty(model.Email) || string.IsNullOrEmpty(model.Password))
+    {
+      return BadRequest(new { message = "All fields are required" });
+    }
+
+    // check if the user exists and the password is correct
     var user = await _userManager.FindByEmailAsync(model.Email);
     if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
     {
+      // generate token
       var token = GenerateToken(user);
       var refreshToken = GenerateRefreshToken();
 
@@ -68,7 +82,8 @@ public class AuthController : ControllerBase
       user.RefreshToken = refreshToken;
       user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7); // Set refresh token expiry time
       await _userManager.UpdateAsync(user);
-
+      if (token == null) return Unauthorized();
+      // return token
       return Ok(new
       {
         token = new JwtSecurityTokenHandler().WriteToken(token),
@@ -79,44 +94,66 @@ public class AuthController : ControllerBase
     return Unauthorized();
   }
 
-   [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] TokenModel tokenModel)
-        {
-            if (tokenModel is null)
-            {
-                return BadRequest("Invalid client request");
-            }
+  [HttpPost("refresh-token")]
+  public async Task<IActionResult> RefreshToken([FromBody] TokenModel tokenModel)
+  {
+    // check if the model is correct
+    if (tokenModel is null) return BadRequest("Invalid client request");
 
-            string accessToken = tokenModel.AccessToken;
-            string refreshToken = tokenModel.RefreshToken;
+    if (string.IsNullOrEmpty(tokenModel.AccessToken) || string.IsNullOrEmpty(tokenModel.RefreshToken))
+    {
+      return BadRequest(new { message = "All fields are required" });
+    }
 
-            var principal = GetPrincipalFromExpiredToken(accessToken);
-            if (principal == null)
-            {
-                return BadRequest("Invalid access token or refresh token");
-            }
+    // get the access token and refresh token
+    string accessToken = tokenModel.AccessToken;
+    string refreshToken = tokenModel.RefreshToken;
 
-            var email = principal.Identity.Name;
-            var user = await _userManager.FindByEmailAsync(email);
 
-            if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
-            {
-                return BadRequest("Invalid access token or refresh token");
-            }
+    // get the principal from the expired token
+    var principal = GetPrincipalFromExpiredToken(accessToken);
+    if (principal == null)
+    {
+      return BadRequest("Invalid access token or refresh token");
+    }
+    if (principal.Identity == null)
+    {
+      return BadRequest("Invalid access token or refresh token");
+    }
 
-            var newAccessToken = GenerateToken(user);
-            var newRefreshToken = GenerateRefreshToken();
+    // get the email from the principal
+    var email = principal.Identity.Name;
+    if (string.IsNullOrEmpty(email))
+    {
+      return BadRequest("Invalid access token or refresh token");
+    }
 
-            user.RefreshToken = newRefreshToken;
-            await _userManager.UpdateAsync(user);
+    // get the user from the email
+    var user = await _userManager.FindByEmailAsync(email);
 
-            return new ObjectResult(new
-            {
-                token = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
-                expiration = newAccessToken.ValidTo,
-                refreshToken = newRefreshToken
-            });
-        }
+    // check if the user exists and the refresh token is correct
+    if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
+    {
+      return BadRequest("Invalid access token or refresh token");
+    }
+
+    // generate new token
+    var newAccessToken = GenerateToken(user);
+    var newRefreshToken = GenerateRefreshToken();
+
+    // Save refresh token with the user
+    user.RefreshToken = newRefreshToken;
+    await _userManager.UpdateAsync(user);
+
+    if (newAccessToken == null) return Unauthorized();
+    // return token
+    return new ObjectResult(new
+    {
+      token = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
+      expiration = newAccessToken.ValidTo,
+      refreshToken = newRefreshToken
+    });
+  }
 
   [HttpPost("logout")]
   public async Task<IActionResult> Logout()
@@ -133,22 +170,24 @@ public class AuthController : ControllerBase
 
 
 
-  private JwtSecurityToken GenerateToken(User user)
+  private JwtSecurityToken? GenerateToken(User user)
   {
+    if (user == null) return null;
+    if (user.Email == null) return null;
     var authClaims = new[]
     {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+      new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+      new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
 
     var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
 
     var token = new JwtSecurityToken(
-        issuer: _configuration["JWT:ValidIssuer"],
-        audience: _configuration["JWT:ValidAudience"],
-        expires: DateTime.Now.AddMinutes(15),
-        claims: authClaims,
-        signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
+      issuer: _configuration["JWT:ValidIssuer"],
+      audience: _configuration["JWT:ValidAudience"],
+      expires: DateTime.Now.AddMinutes(15),
+      claims: authClaims,
+      signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
     );
 
     return token;

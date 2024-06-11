@@ -11,7 +11,7 @@ services:
       MYSQL_USER: todoapp
       MYSQL_PASSWORD: p123
     ports:
-      - "3306:3306"
+      - "3506:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
