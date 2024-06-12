@@ -15,7 +15,6 @@ using TodoAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 // Add the Database Context for Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
   options.UseMySql(
@@ -32,13 +31,13 @@ builder.Services.AddControllers().AddJsonOptions(options =>
   options.JsonSerializerOptions.PropertyNamingPolicy = null;
   options.JsonSerializerOptions.DictionaryKeyPolicy = null;
 });
-
 // Add Redis Cache for Session
 builder.Services.AddStackExchangeRedisCache(options =>
 {
   options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
-  options.InstanceName = builder.Configuration.GetValue<string>("RedisName");
+  options.InstanceName = "TodoAPI";
 });
+
 // Add Identity for User Management
 builder.Services.AddIdentity<User, IdentityRole>()
   .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -67,18 +66,17 @@ if (app.Environment.IsDevelopment())
   app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-app.UseSession();
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseSession();
 
-// ONLY FOR DEVELOPMENT PURPOSES
-//app.UseMiddleware<RequestLoggingMiddleware>();
-
-app.MapControllers();
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+});
 
 
 app.Run();

@@ -8,7 +8,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class AuthController : ControllerBase
 {
   private readonly UserManager<User> _userManager;

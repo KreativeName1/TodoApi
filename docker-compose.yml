@@ -30,6 +30,8 @@ services:
   api:
     image: mcr.microsoft.com/dotnet/aspnet:8.0
     container_name: apiTodo
+    volumes:
+      - api-data:/app
     build:
       context: .
       dockerfile: Dockerfile
@@ -44,6 +46,7 @@ services:
 volumes:
   mysql-data:
   redis-data:
+  api-data:
 
 networks:
   backend:

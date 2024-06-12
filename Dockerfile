@@ -1,4 +1,3 @@
-# dotnet 8.0 sdk
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 
@@ -10,9 +9,6 @@ ENV PATH="${PATH}:/root/.dotnet/tools"
 
 RUN dotnet restore TodoApi.csproj
 
-RUN dotnet build
-
-RUN dotnet ef database update
 
 RUN dotnet publish -c Release -o out TodoApi.csproj
 
