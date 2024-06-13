@@ -12,13 +12,15 @@ using System.Security.Cryptography;
 public class AuthController : ControllerBase
 {
   private readonly UserManager<User> _userManager;
+  private readonly SignInManager<User> _signInManager;
   private readonly IConfiguration _configuration;
 
-  public AuthController(UserManager<User> userManager, IConfiguration configuration)
-  {
-    _userManager = userManager;
-    _configuration = configuration;
-  }
+ public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration)
+    {
+        _userManager = userManager;
+        _signInManager = signInManager;
+        _configuration = configuration;
+    }
 
   [HttpPost("register")]
   public async Task<IActionResult> Register(RegisterModel model)
@@ -43,21 +45,45 @@ public class AuthController : ControllerBase
       {
         return BadRequest(new { message = "Password must be at least 8 characters long" });
       }
-
+      Debug("Creating user", "Info");
       // create the user
       var user = new User(model.FirstName, model.LastName, model.Email)
       {
         UserName = model.Email,
         CreatedAt = DateTime.UtcNow
       };
-
+      Debug(user.ToString(), "Info");
       // save the user
       var result = await _userManager.CreateAsync(user, model.Password);
-      if (result.Succeeded) return Ok();
-      else return BadRequest(result.Errors);
+      if (result.Succeeded) {Debug("User created", "Info");
+        return Ok();
+      }
+      else {Debug("User not created", "Error");
+        return BadRequest(new { message = "User not created" });
+      }
     }
 
     return BadRequest(ModelState);
+  }
+  public void Debug(string message, string? category = null)
+  {
+    switch (category)
+    {
+      case "Error":
+        Console.ForegroundColor = ConsoleColor.Red;
+        break;
+      case "Warning":
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        break;
+      case "Info":
+        Console.ForegroundColor = ConsoleColor.Green;
+        break;
+      default: Console.ForegroundColor = ConsoleColor.Blue;
+        break;
+    }
+    Console.WriteLine(message);
+      Console.ResetColor();
+      return;
   }
 
   [HttpPost("login")]
@@ -71,100 +97,27 @@ public class AuthController : ControllerBase
     }
 
     // check if the user exists and the password is correct
-    var user = await _userManager.FindByEmailAsync(model.Email);
-    if (user != null && await _userManager.CheckPasswordAsync(user, model.Password))
+    User user = await _userManager.FindByEmailAsync(model.Email);
+    if (user== null) return BadRequest(new { message = "Invalid email or password" });
+    var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
+    if (result.Succeeded)
     {
       // generate token
       var token = GenerateToken(user);
-      var refreshToken = GenerateRefreshToken();
-
-      // Save refresh token with the user
-      user.RefreshToken = refreshToken;
-      user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7); // Set refresh token expiry time
-      await _userManager.UpdateAsync(user);
       if (token == null) return Unauthorized();
       // return token
-      return Ok(new
+      return new ObjectResult(new
       {
-        token = new JwtSecurityTokenHandler().WriteToken(token),
-        expiration = token.ValidTo,
-        refreshToken = refreshToken
+        token = GenerateToken(user),
       });
     }
     return Unauthorized();
   }
 
-  [HttpPost("refresh-token")]
-  public async Task<IActionResult> RefreshToken([FromBody] TokenModel tokenModel)
-  {
-    // check if the model is correct
-    if (tokenModel is null) return BadRequest("Invalid client request");
-
-    if (string.IsNullOrEmpty(tokenModel.AccessToken) || string.IsNullOrEmpty(tokenModel.RefreshToken))
-    {
-      return BadRequest(new { message = "All fields are required" });
-    }
-
-    // get the access token and refresh token
-    string accessToken = tokenModel.AccessToken;
-    string refreshToken = tokenModel.RefreshToken;
-
-
-    // get the principal from the expired token
-    var principal = GetPrincipalFromExpiredToken(accessToken);
-    if (principal == null)
-    {
-      return BadRequest("Invalid access token or refresh token");
-    }
-    if (principal.Identity == null)
-    {
-      return BadRequest("Invalid access token or refresh token");
-    }
-
-    // get the email from the principal
-    var email = principal.Identity.Name;
-    if (string.IsNullOrEmpty(email))
-    {
-      return BadRequest("Invalid access token or refresh token");
-    }
-
-    // get the user from the email
-    var user = await _userManager.FindByEmailAsync(email);
-
-    // check if the user exists and the refresh token is correct
-    if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
-    {
-      return BadRequest("Invalid access token or refresh token");
-    }
-
-    // generate new token
-    var newAccessToken = GenerateToken(user);
-    var newRefreshToken = GenerateRefreshToken();
-
-    // Save refresh token with the user
-    user.RefreshToken = newRefreshToken;
-    await _userManager.UpdateAsync(user);
-
-    if (newAccessToken == null) return Unauthorized();
-    // return token
-    return new ObjectResult(new
-    {
-      token = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
-      expiration = newAccessToken.ValidTo,
-      refreshToken = newRefreshToken
-    });
-  }
-
   [HttpPost("logout")]
   public async Task<IActionResult> Logout()
   {
-    var user = await _userManager.GetUserAsync(User);
-    if (user != null)
-    {
-      user.RefreshToken = null;
-      user.RefreshTokenExpiryTime = DateTime.Now;
-      await _userManager.UpdateAsync(user);
-    }
+    await _signInManager.SignOutAsync();
     return Ok();
   }
 
@@ -174,63 +127,26 @@ public class AuthController : ControllerBase
   {
     if (user == null) return null;
     if (user.Email == null) return null;
+    var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+    var credentials = new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256);
+    
     var authClaims = new[]
     {
-      new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-      new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+      new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+      new Claim(JwtRegisteredClaimNames.Email, user.Email),
     };
 
-    var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-
-    var token = new JwtSecurityToken(
-      issuer: _configuration["JWT:ValidIssuer"],
-      audience: _configuration["JWT:ValidAudience"],
-      expires: DateTime.Now.AddMinutes(15),
-      claims: authClaims,
-      signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
-    );
-
-    return token;
-  }
-
-  private string GenerateRefreshToken()
-  {
-    var randomNumber = new byte[32];
-    using (var rng = RandomNumberGenerator.Create())
+    var tokenDiscriptor = new SecurityTokenDescriptor
     {
-      rng.GetBytes(randomNumber);
-      return Convert.ToBase64String(randomNumber);
-    }
-  }
-
-  private ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
-  {
-    var tokenValidationParameters = new TokenValidationParameters
-    {
-      ValidateAudience = false,
-      ValidateIssuer = false,
-      ValidateIssuerSigningKey = true,
-      IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"])),
-      ValidateLifetime = false
+      Subject = new ClaimsIdentity(authClaims),
+      Expires = DateTime.UtcNow.AddMinutes(30),
+      SigningCredentials = credentials
     };
-
     var tokenHandler = new JwtSecurityTokenHandler();
-    SecurityToken securityToken;
-    var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out securityToken);
-    var jwtSecurityToken = securityToken as JwtSecurityToken;
-    if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-    {
-      throw new SecurityTokenException("Invalid token");
-    }
-
-    return principal;
+    var securityToken = tokenHandler.CreateToken(tokenDiscriptor);
+    return (JwtSecurityToken)securityToken;
   }
 }
-
-
-
-
-
 
 public class RegisterModel
 {
@@ -244,10 +160,4 @@ public class LoginModel
 {
   public string? Email { get; set; }
   public string? Password { get; set; }
-}
-
-public class TokenModel
-{
-  public string? AccessToken { get; set; }
-  public string? RefreshToken { get; set; }
 }

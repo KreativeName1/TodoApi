@@ -7,16 +7,9 @@
   },
   "AllowedHosts": "*",
   "ConnectionStrings": {
-    "DefaultConnection": "server=SERVER;database=DATABASE;user=USER;password=PASSWORD"
+    "MySQLConnection": "server=SERVER;userid=USER;password=PASSWORD;database=DATABASE"
   },
   "Jwt": {
-    "Key": "geheim",
-    "Issuer": "http://localhost:5000",
-    "Audience": "http://localhost:5000"
-  },
-  "Redis": {
-    "ConnectionStrings": {
-      "DefaultConnection": "localhost:6379"
-    }
+    "Secret": "SECRET"
   }
 }

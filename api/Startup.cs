@@ -6,8 +6,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Text;
+using System.Linq;
+
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
 
 
 using TodoAPI;
@@ -18,12 +24,43 @@ var builder = WebApplication.CreateBuilder(args);
 // Add the Database Context for Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
   options.UseMySql(
-    builder.Configuration.GetConnectionString("MySQLConnection"),
+    "Server=mysql;UserId=todoapp;Password=p123;Database=todoapp;SslMode=None",
+    //"Server=127.0.0.1;Port=3506;UserId=todoapp;Password=p123;Database=todoapp;SslMode=None",
     new MySqlServerVersion(new Version(5, 7)),
     mySqlOptions => mySqlOptions.EnableRetryOnFailure()
   ));
 
-builder.Services.AddControllers();
+
+
+// Add the Identity Service for the User Model
+builder.Services.AddIdentity<User, IdentityRole>()
+  .AddEntityFrameworkStores<ApplicationDbContext>()
+  .AddDefaultTokenProviders();
+
+
+builder.Services.AddAuthentication(options =>
+{
+  options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+  options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+  options.TokenValidationParameters = new TokenValidationParameters
+  {
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("WmVog9i8K7V06StXfjueQOaRYfelo7N9A6TRe5rG1MIpFZRNyoL0E06aiSS9Sk10aeu3KdnLxkLHd5dXwEx5FpUARYf7kEXpSq9y")),
+    ValidateIssuer = false,
+    ValidateAudience = false,
+  };
+}).AddCookie(options =>
+{
+  options.ExpireTimeSpan = TimeSpan.FromDays(10);
+  options.LoginPath = "/auth/login";
+  options.LogoutPath = "/auth/logout";
+});
+
+builder.Services.AddAuthorization();
+
+// builder.Services.AddControllers();
 
 // allow json data to be sent to the server
 builder.Services.AddControllers().AddJsonOptions(options =>
@@ -31,26 +68,6 @@ builder.Services.AddControllers().AddJsonOptions(options =>
   options.JsonSerializerOptions.PropertyNamingPolicy = null;
   options.JsonSerializerOptions.DictionaryKeyPolicy = null;
 });
-// Add Redis Cache for Session
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-  options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
-  options.InstanceName = "TodoAPI";
-});
-
-// Add Identity for User Management
-builder.Services.AddIdentity<User, IdentityRole>()
-  .AddEntityFrameworkStores<ApplicationDbContext>()
-  .AddDefaultTokenProviders();
-
-// Add Session for User Authentication
-builder.Services.AddSession(options =>
-{
-  options.IdleTimeout = TimeSpan.FromMinutes(30);
-  options.Cookie.HttpOnly = true;
-  options.Cookie.IsEssential = true;
-});
-
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -71,7 +88,6 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseSession();
 
 app.UseEndpoints(endpoints =>
 {

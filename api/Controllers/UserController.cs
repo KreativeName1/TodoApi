@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using TodoAPI.Models;
 using BCrypt.Net;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 namespace TodoAPI.Controllers
 {
 
@@ -17,41 +21,38 @@ namespace TodoAPI.Controllers
       _connection = database;
     }
 
-    [HttpGet(Name = "GetUsers")]
-    public IEnumerable<User> Get()
+    [HttpGet(Name = "GetUser")]
+    public async Task<IActionResult> Get()
     {
-      return _connection.Users;
+      var user = await _connection.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+      if (user == null) return NotFound();
+      return Ok(user); // Return only necessary user information
     }
 
-    [HttpGet("{id}", Name = "GetUser")]
-    public User? Get(int id)
+    [HttpPut(Name = "UpdateUser")]
+    public async Task<IActionResult> Put([FromBody] User user)
     {
-      User? user = _connection.Users.Find(id);
-      if (user == null) return null;
-      return _connection.Users.Find(id);
-    }
+      var existingUser = await _connection.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+      if (existingUser == null) return NotFound();
 
-    [HttpPut("{id}", Name = "UpdateUser")]
-    public User? Put(int id, [FromBody] User user)
-    {
-      var existingUser = _connection.Users.Find(id);
-      if (existingUser == null) return null;
       existingUser.FirstName = user.FirstName;
       existingUser.LastName = user.LastName;
-      existingUser.Email = user.Email;
-      existingUser.Password = user.Password;
-      _connection.SaveChanges();
-      return existingUser;
+      await _connection.SaveChangesAsync();
+      return Ok(existingUser); // Return only necessary user information
     }
 
-    [HttpDelete("{id}", Name = "DeleteUser")]
-    public User? Delete(int id)
+    [HttpDelete(Name = "DeleteUser")]
+    public async Task<IActionResult> Delete()
     {
-      User? user = _connection.Users.Find(id);
-      if (user == null) return null;
+      var user = await _connection.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
+      if (user == null) return NotFound();
+
+      //delete all todo notes associated with the user
+      _connection.TodoNotes.RemoveRange(_connection.TodoNotes.Where(tn => tn.UserId == user.Id));
       _connection.Users.Remove(user);
-      _connection.SaveChanges();
-      return user;
+
+      await _connection.SaveChangesAsync();
+      return NoContent(); // Don't return user data on delete
     }
   }
 }

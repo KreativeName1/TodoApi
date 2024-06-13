@@ -46,6 +46,7 @@ namespace TodoApi.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("varchar(95)");
 
                     b.HasKey("Id");
@@ -95,10 +96,6 @@ namespace TodoApi.Migrations
                     b.Property<string>("NormalizedUserName")
                         .HasColumnType("longtext");
 
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<string>("PasswordHash")
                         .HasColumnType("longtext");
 
@@ -107,12 +104,6 @@ namespace TodoApi.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("RefreshToken")
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime?>("RefreshTokenExpiryTime")
-                        .HasColumnType("datetime(6)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext");
@@ -132,7 +123,9 @@ namespace TodoApi.Migrations
                 {
                     b.HasOne("TodoAPI.Models.User", "User")
                         .WithMany("TodoNotes")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
