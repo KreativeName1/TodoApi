@@ -45,45 +45,19 @@ public class AuthController : ControllerBase
       {
         return BadRequest(new { message = "Password must be at least 8 characters long" });
       }
-      Debug("Creating user", "Info");
       // create the user
       var user = new User(model.FirstName, model.LastName, model.Email)
       {
         UserName = model.Email,
         CreatedAt = DateTime.UtcNow
       };
-      Debug(user.ToString(), "Info");
       // save the user
       var result = await _userManager.CreateAsync(user, model.Password);
-      if (result.Succeeded) {Debug("User created", "Info");
-        return Ok();
-      }
-      else {Debug("User not created", "Error");
-        return BadRequest(new { message = "User not created" });
-      }
+      if (result.Succeeded) return Ok();
+      else return BadRequest(new { message = "User not created" });
     }
 
     return BadRequest(ModelState);
-  }
-  public void Debug(string message, string? category = null)
-  {
-    switch (category)
-    {
-      case "Error":
-        Console.ForegroundColor = ConsoleColor.Red;
-        break;
-      case "Warning":
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        break;
-      case "Info":
-        Console.ForegroundColor = ConsoleColor.Green;
-        break;
-      default: Console.ForegroundColor = ConsoleColor.Blue;
-        break;
-    }
-    Console.WriteLine(message);
-      Console.ResetColor();
-      return;
   }
 
   [HttpPost("login")]
@@ -127,9 +101,9 @@ public class AuthController : ControllerBase
   {
     if (user == null) return null;
     if (user.Email == null) return null;
-    var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
+    var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("WmVog9i8K7V06StXfjueQOaRYfelo7N9A6TRe5rG1MIpFZRNyoL0E06aiSS9Sk10aeu3KdnLxkLHd5dXwEx5FpUARYf7kEXpSq9y"));
     var credentials = new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256);
-    
+
     var authClaims = new[]
     {
       new Claim(JwtRegisteredClaimNames.Sub, user.Id),
