@@ -13,6 +13,8 @@ namespace TodoAPI.Models
     public User()
     {
       CreatedAt = DateTime.Now;
+      FirstName = string.Empty;
+      LastName = string.Empty;
     }
 
     public User(string firstName, string lastName, string email)
