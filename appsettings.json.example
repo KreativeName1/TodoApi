@@ -1,0 +1,16 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "MySQLConnection": "Server=mysql;UserId=todoapp;Password=p123;Database=todoapp;SslMode=None",
+    "MigrationConnection": "Server=127.0.0.1;Port=3506;UserId=todoapp;Password=p123;Database=todoapp;SslMode=None"
+  },
+  "Jwt": {
+    "Secret": "SECRET"
+  }
+}
