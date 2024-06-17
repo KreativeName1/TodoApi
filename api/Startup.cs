@@ -20,21 +20,14 @@ using TodoAPI;
 using TodoAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddJsonFile("appsettings.json");
 
 // Add the Database Context for Entity Framework
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-//  options.UseMySql(
-  //  "Server=mysql;UserId=todoapp;Password=p123;Database=todoapp;SslMode=None",
-  //  //"Server=127.0.0.1;Port=3506;UserId=todoapp;Password=p123;Database=todoapp;SslMode=None",
- //   new MySqlServerVersion(new Version(5, 7)),
-  //  mySqlOptions => mySqlOptions.EnableRetryOnFailure()
- // ));
   options.UseMySql(
     // First, use the first one to start the application with Docker.
     // Then use the second one to migrate the database on your local machine.
-    builder.Configuration.GetConnectionString("MySqlConnection"),
-    //builder.Configuration.GetConnectionString("MigrationConnection"),
+    Config.Connection,
+    //* Config.LocalConnection,
     new MySqlServerVersion(new Version(5, 7)),
     mySqlOptions => mySqlOptions.EnableRetryOnFailure()
   ));
@@ -55,7 +48,7 @@ builder.Services.AddAuthentication(options =>
   options.TokenValidationParameters = new TokenValidationParameters
   {
     ValidateIssuerSigningKey = true,
-    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"])),
+    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Config.JwtSecret)),
     ValidateIssuer = false,
     ValidateAudience = false,
   };

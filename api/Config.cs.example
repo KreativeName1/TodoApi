@@ -1,0 +1,6 @@
+
+public class Config {
+    public static string LocalConnection = "Server=127.0.0.1;Port=3506;UserId=todoapp;Password=p123;Database=todoapp;SslMode=None";
+    public static string Connection = "Server=mysql;UserId=todoapp;Password=p123;Database=todoapp;SslMode=None";
+    public static string JwtSecret = "WmVog9i8K7V06StXfjueQOaRYfelo7N9A6TRe5rG1MIpFZRNyoL0E06aiSS9Sk10aeu3KdnLxkLHd5dXwEx5FpUARYf7kEXpSq9y";
+}
