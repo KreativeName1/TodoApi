@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace TodoAPI.Controllers
 {
@@ -22,45 +23,54 @@ namespace TodoAPI.Controllers
       _connection = database;
       _authorizationService = authorizationService;
     }
-     private async Task<User?> GetCurrentUser()
+    private async Task<User> GetCurrentUser()
     {
-      User? user = await _connection.Users.FirstOrDefaultAsync(u => u.UserName == User.Identity.Name);
-      if (user == null) return null;
-      return user;
+      string userid = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
+      return _connection.Users.FirstOrDefault(u => u.Id == userid);
     }
 
 
     [HttpGet("{id}", Name = "GetTodoNote")]
-    public async Task<IActionResult> Get(int id, [FromServices] IAuthorizationService authorizationService)
+    public async Task<IActionResult> Get(int id)
     {
-      var user = await GetCurrentUser();
-      if (user == null) return NotFound();
-
+      User user = await GetCurrentUser();
+      if (user == null) return Unauthorized();
       var todoNote = await _connection.TodoNotes.FindAsync(id);
       if (todoNote == null) return NotFound();
-
-      var authorized = await _authorizationService.AuthorizeAsync(User, todoNote, new TodoNoteAuthorizationRequirement(user.Id));
-      if (!authorized.Succeeded) return Forbid();
-
       return Ok(todoNote);
     }
 
     [HttpPost(Name = "CreateTodoNote")]
-    public async Task<IActionResult> Post([FromBody] TodoNote todoNote)
+    public async Task<IActionResult> Post([FromBody] CreateModel todoNoteModel)
     {
-       var user = await GetCurrentUser();
+      User user = await GetCurrentUser();
       if (user == null) return Unauthorized();
-      todoNote.CreatedAt = DateTime.Now;
-      todoNote.UpdatedAt = DateTime.Now;
-      todoNote.User = user;
-      _connection.TodoNotes.Add(todoNote);_connection.SaveChanges();
+
+      if (todoNoteModel == null) return BadRequest("Invalid client request");
+      if (string.IsNullOrEmpty(todoNoteModel.Title) || string.IsNullOrEmpty(todoNoteModel.Content))
+      {
+        return BadRequest(new { message = "Title and Content are required" });
+      }
+
+      TodoNote todoNote = new TodoNote
+      {
+        Title = todoNoteModel.Title,
+        Content = todoNoteModel.Content,
+        DueDate = todoNoteModel.DueDate ?? null,
+        IsComplete = false,
+        CreatedAt = DateTime.Now,
+        UpdatedAt = DateTime.Now,
+        UserId = user.Id
+      };
+
+      _connection.TodoNotes.Add(todoNote); _connection.SaveChanges();
       return CreatedAtRoute("GetTodoNote", new { id = todoNote.Id }, todoNote);
     }
 
     [HttpPut("{id}", Name = "UpdateTodoNote")]
     public async Task<IActionResult> Put(int id, [FromBody] TodoNote todoNote)
     {
-      var user = await GetCurrentUser();
+      User user = await GetCurrentUser();
       if (user == null) return Unauthorized();
       var existingTodoNote = await _connection.TodoNotes.FindAsync(id);
       if (existingTodoNote == null) return NotFound();
@@ -81,7 +91,7 @@ namespace TodoAPI.Controllers
     [HttpPut("{id}/markComplete", Name = "MarkCompleteTodoNote")]
     public async Task<IActionResult> Complete(int id)
     {
-       var user = await GetCurrentUser();
+      User user = await GetCurrentUser();
       if (user == null) return Unauthorized();
 
       var todoNote = await _connection.TodoNotes.FindAsync(id);
@@ -99,7 +109,7 @@ namespace TodoAPI.Controllers
     [HttpDelete("{id}", Name = "DeleteTodoNote")]
     public async Task<IActionResult> Delete(int id)
     {
-      var user = await GetCurrentUser();
+      User user = await GetCurrentUser();
       if (user == null) return Unauthorized();
 
       var todoNote = await _connection.TodoNotes.FindAsync(id);
@@ -116,7 +126,7 @@ namespace TodoAPI.Controllers
     [HttpGet("user/", Name = "GetTodoNotes")]
     public async Task<IActionResult> GetTodoNotes()
     {
-      var user = await GetCurrentUser();
+      User user = await GetCurrentUser();
       if (user == null) return Unauthorized();
 
       var todoNotes = await _connection.TodoNotes
@@ -136,4 +146,12 @@ public class TodoNoteAuthorizationRequirement : IAuthorizationRequirement
   {
     UserId = userId;
   }
+}
+
+
+public class CreateModel
+{
+  public string? Title { get; set; }
+  public string? Content { get; set; }
+  public DateTime? DueDate { get; set; }
 }

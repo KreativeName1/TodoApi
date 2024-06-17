@@ -13,14 +13,12 @@ public class AuthController : ControllerBase
 {
   private readonly UserManager<User> _userManager;
   private readonly SignInManager<User> _signInManager;
-  private readonly IConfiguration _configuration;
 
- public AuthController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration)
-    {
-        _userManager = userManager;
-        _signInManager = signInManager;
-        _configuration = configuration;
-    }
+  public AuthController(UserManager<User> userManager, SignInManager<User> signInManager)
+  {
+    _userManager = userManager;
+    _signInManager = signInManager;
+  }
 
   [HttpPost("register")]
   public async Task<IActionResult> Register(RegisterModel model)
@@ -54,7 +52,10 @@ public class AuthController : ControllerBase
       // save the user
       var result = await _userManager.CreateAsync(user, model.Password);
       if (result.Succeeded) return Ok();
-      else return BadRequest(new { message = "User not created" });
+
+      //else return BadRequest(new { message = "User not created" });
+      // DEBUG RETURN MESSAGE
+      else return BadRequest(new { message = result.Errors.Select(e => e.Description).ToList() });
     }
 
     return BadRequest(ModelState);
@@ -72,7 +73,7 @@ public class AuthController : ControllerBase
 
     // check if the user exists and the password is correct
     User user = await _userManager.FindByEmailAsync(model.Email);
-    if (user== null) return BadRequest(new { message = "Invalid email or password" });
+    if (user == null) return BadRequest(new { message = "Invalid email or password" });
     var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
     if (result.Succeeded)
     {
@@ -87,15 +88,6 @@ public class AuthController : ControllerBase
     }
     return Unauthorized();
   }
-
-  [HttpPost("logout")]
-  public async Task<IActionResult> Logout()
-  {
-    await _signInManager.SignOutAsync();
-    return Ok();
-  }
-
-
 
   private JwtSecurityToken? GenerateToken(User user)
   {
@@ -119,6 +111,12 @@ public class AuthController : ControllerBase
     var tokenHandler = new JwtSecurityTokenHandler();
     var securityToken = tokenHandler.CreateToken(tokenDiscriptor);
     return (JwtSecurityToken)securityToken;
+  }
+  [HttpPost("logout")]
+  public async Task<IActionResult> Logout()
+  {
+    await _signInManager.SignOutAsync();
+    return Ok();
   }
 }
 

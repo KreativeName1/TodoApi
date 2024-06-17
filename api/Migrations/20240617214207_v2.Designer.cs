@@ -11,8 +11,8 @@ using TodoAPI;
 namespace TodoApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240613123030_ver2")]
-    partial class ver2
+    [Migration("20240617214207_v2")]
+    partial class v2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -125,17 +125,12 @@ namespace TodoApi.Migrations
             modelBuilder.Entity("TodoAPI.Models.TodoNote", b =>
                 {
                     b.HasOne("TodoAPI.Models.User", "User")
-                        .WithMany("TodoNotes")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TodoAPI.Models.User", b =>
-                {
-                    b.Navigation("TodoNotes");
                 });
 #pragma warning restore 612, 618
         }

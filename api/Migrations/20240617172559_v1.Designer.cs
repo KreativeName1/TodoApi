@@ -11,8 +11,8 @@ using TodoAPI;
 namespace TodoApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240605093223_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20240617172559_v1")]
+    partial class v1
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,8 +48,9 @@ namespace TodoApi.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("varchar(95)");
 
                     b.HasKey("Id");
 
@@ -60,9 +61,8 @@ namespace TodoApi.Migrations
 
             modelBuilder.Entity("TodoAPI.Models.User", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(95)");
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
@@ -70,8 +70,10 @@ namespace TodoApi.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .HasColumnType("longtext");
 
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<bool>("EmailConfirmed")
@@ -95,10 +97,6 @@ namespace TodoApi.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("NormalizedUserName")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
                         .HasColumnType("longtext");
 
                     b.Property<string>("PasswordHash")

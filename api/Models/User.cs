@@ -10,8 +10,6 @@ namespace TodoAPI.Models
 
     public DateTime? CreatedAt { get; set; }
 
-    public List<TodoNote> TodoNotes { get; set; }
-
     public User()
     {
       CreatedAt = DateTime.Now;

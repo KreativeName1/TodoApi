@@ -122,17 +122,12 @@ namespace TodoApi.Migrations
             modelBuilder.Entity("TodoAPI.Models.TodoNote", b =>
                 {
                     b.HasOne("TodoAPI.Models.User", "User")
-                        .WithMany("TodoNotes")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TodoAPI.Models.User", b =>
-                {
-                    b.Navigation("TodoNotes");
                 });
 #pragma warning restore 612, 618
         }
