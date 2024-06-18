@@ -1,7 +1,7 @@
 # TodoApi (ASP.NET Core API)
 
 ## About
-This API servers as the backend for a TodoNote application. It allows users to register, login and manage their todo notes.
+This API serves as the backend for a TodoNote application. It allows users to register, login and manage their todo notes.
 
 The API is written in C# (ASP.NET Core) and utilizes EntityFramework for data persistence.
 ****
