@@ -26,6 +26,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
   options.UseMySql(
     // First, use the first one to start the application with Docker.
     // Then use the second one to migrate the database on your local machine.
+    // After that  you can use the first one again.
     Config.Connection,
     //* Config.LocalConnection,
     new MySqlServerVersion(new Version(5, 7)),
@@ -38,7 +39,7 @@ builder.Services.AddIdentity<User, IdentityRole>()
   .AddEntityFrameworkStores<ApplicationDbContext>()
   .AddDefaultTokenProviders();
 
-
+// Add the Authorization Service for the User Model
 builder.Services.AddAuthentication(options =>
 {
   options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -61,7 +62,6 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// builder.Services.AddControllers();
 
 // allow json data to be sent to the server
 builder.Services.AddControllers().AddJsonOptions(options =>

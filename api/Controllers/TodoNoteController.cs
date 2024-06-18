@@ -87,25 +87,6 @@ namespace TodoAPI.Controllers
       return Ok(existingTodoNote);
     }
 
-    // mark a todo note as complete
-    [HttpPut("{id}/markComplete", Name = "MarkCompleteTodoNote")]
-    public async Task<IActionResult> Complete(int id)
-    {
-      User user = await GetCurrentUser();
-      if (user == null) return Unauthorized();
-
-      var todoNote = await _connection.TodoNotes.FindAsync(id);
-      if (todoNote == null) return NotFound();
-
-      // Check authorization using authorization service
-      var authorized = await _authorizationService.AuthorizeAsync(User, todoNote, new TodoNoteAuthorizationRequirement(user.Id));
-      if (!authorized.Succeeded) return Forbid();
-
-      todoNote.IsComplete = true;
-      _connection.SaveChanges();
-      return Ok(todoNote);
-    }
-
     [HttpDelete("{id}", Name = "DeleteTodoNote")]
     public async Task<IActionResult> Delete(int id)
     {
@@ -115,14 +96,12 @@ namespace TodoAPI.Controllers
       var todoNote = await _connection.TodoNotes.FindAsync(id);
       if (todoNote == null) return NotFound();
 
-      // Check authorization using authorization service
-      var authorized = await _authorizationService.AuthorizeAsync(User, todoNote, new TodoNoteAuthorizationRequirement(user.Id));
-      if (!authorized.Succeeded) return Forbid();
-
       _connection.TodoNotes.Remove(todoNote);
       _connection.SaveChanges();
       return Ok(todoNote);
     }
+
+
     [HttpGet("user/", Name = "GetTodoNotes")]
     public async Task<IActionResult> GetTodoNotes()
     {
@@ -135,19 +114,22 @@ namespace TodoAPI.Controllers
 
       return Ok(todoNotes);
     }
+  // mark a todo note as complete
+    [HttpPut("{id}/markComplete", Name = "MarkCompleteTodoNote")]
+    public async Task<IActionResult> Complete(int id)
+    {
+      User user = await GetCurrentUser();
+      if (user == null) return Unauthorized();
+
+      var todoNote = await _connection.TodoNotes.FindAsync(id);
+      if (todoNote == null) return NotFound();
+
+      todoNote.IsComplete = true;
+      _connection.SaveChanges();
+      return Ok(todoNote);
+    }
   }
 }
-
-public class TodoNoteAuthorizationRequirement : IAuthorizationRequirement
-{
-  public string UserId { get; }
-
-  public TodoNoteAuthorizationRequirement(string userId)
-  {
-    UserId = userId;
-  }
-}
-
 
 public class CreateModel
 {

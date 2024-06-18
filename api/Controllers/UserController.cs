@@ -27,7 +27,7 @@ namespace TodoAPI.Controllers
     public async Task<IActionResult> Get()
     {
       User user = await GetCurrentUser();
-      if (user == null) return NotFound();
+      if (user == null) return Unauthorized();
       return Ok(user);
     }
     private async Task<User> GetCurrentUser()
@@ -52,7 +52,7 @@ namespace TodoAPI.Controllers
     public async Task<IActionResult> Delete()
     {
       User user = await GetCurrentUser();
-      if (user == null) return NotFound();
+      if (user == null) return Unauthorized();
 
       _connection.TodoNotes.RemoveRange(_connection.TodoNotes.Where(tn => tn.UserId == user.Id));
       _connection.Users.Remove(user);

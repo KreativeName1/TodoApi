@@ -3,3 +3,4 @@ api/bin/
 api/obj/
 api/Migrations/
 api/Config.cs
+.env
