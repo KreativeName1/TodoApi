@@ -65,7 +65,6 @@ This is my first time creating an ASP.NET Core API. I learned to use EntityFrame
 
 ## Known Issues
 - Some endpoints are not fully tested and may contain bugs or don't work.
-- Currently the Docs and the API are not in sync. The API needs to be updated to match the Docs. (Missing optinal fields, etc.)
 
 
 ## Licence
