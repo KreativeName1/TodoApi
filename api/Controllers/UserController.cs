@@ -24,13 +24,13 @@ namespace TodoAPI.Controllers
     }
 
     [HttpGet(Name = "GetUser")]
-    public async Task<IActionResult> Get()
+    public IActionResult Get()
     {
-      User user = await GetCurrentUser();
+      User? user = GetCurrentUser();
       if (user == null) return Unauthorized();
       return Ok(user);
     }
-    private async Task<User> GetCurrentUser()
+    private User? GetCurrentUser()
     {
       string userid = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
       return _connection.Users.FirstOrDefault(u => u.Id == userid);
@@ -39,7 +39,7 @@ namespace TodoAPI.Controllers
     [HttpPut(Name = "UpdateUser")]
     public async Task<IActionResult> Put([FromBody] User user)
     {
-      User existingUser = await GetCurrentUser();
+      User? existingUser = GetCurrentUser();
       if (existingUser == null) return NotFound();
 
       existingUser.FirstName = user.FirstName;
@@ -51,7 +51,7 @@ namespace TodoAPI.Controllers
     [HttpDelete(Name = "DeleteUser")]
     public async Task<IActionResult> Delete()
     {
-      User user = await GetCurrentUser();
+      User? user = GetCurrentUser();
       if (user == null) return Unauthorized();
 
       _connection.TodoNotes.RemoveRange(_connection.TodoNotes.Where(tn => tn.UserId == user.Id));

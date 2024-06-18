@@ -19,20 +19,20 @@ using Microsoft.Extensions.Hosting;
 using TodoAPI;
 using TodoAPI.Models;
 
+var isRunningInDocker = System.IO.File.Exists("/.dockerenv");
 var builder = WebApplication.CreateBuilder(args);
 
-// Add the Database Context for Entity Framework
+// if running in docker, use the docker connection string
+// otherwise use the local connection string
+string connectionString = isRunningInDocker ? Config.DockerConnection : Config.LocalConnection;
+
+// Add DbContext to the application
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
   options.UseMySql(
-    // First, use the first one to start the application with Docker.
-    // Then use the second one to migrate the database on your local machine.
-    // After that  you can use the first one again.
-    Config.Connection,
-    //* Config.LocalConnection,
+    connectionString,
     new MySqlServerVersion(new Version(5, 7)),
     mySqlOptions => mySqlOptions.EnableRetryOnFailure()
   ));
-
 
 // Add the Identity Service for the User Model
 builder.Services.AddIdentity<User, IdentityRole>()

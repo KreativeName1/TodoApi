@@ -72,7 +72,7 @@ public class AuthController : ControllerBase
     }
 
     // check if the user exists and the password is correct
-    User user = await _userManager.FindByEmailAsync(model.Email);
+    User? user = await _userManager.FindByEmailAsync(model.Email);
     if (user == null) return BadRequest(new { message = "Invalid email or password" });
     var result = await _signInManager.CheckPasswordSignInAsync(user, model.Password, false);
     if (result.Succeeded)

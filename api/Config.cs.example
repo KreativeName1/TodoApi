@@ -1,6 +1,6 @@
 
 public class Config {
     public static string LocalConnection = "Server=127.0.0.1;Port=3906;UserId=USER;Password=PASSWORD;Database=DATABASE;SslMode=None";
-    public static string Connection = "Server=mysql;UserId=USER;Password=PASSWORD;Database=DATABASE;SslMode=None";
+    public static string DockerConnection = "Server=mysql;UserId=USER;Password=PASSWORD;Database=DATABASE;SslMode=None";
     public static string JwtSecret = "SECRET";
 }

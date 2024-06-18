@@ -42,16 +42,12 @@ MYSQL_PASSWORD=PASSWORD
 cd TodoApi
 sudo docker-compose -d --build
 ```
-5. Migrate and Update Database
-- Open `Startup.cs` and go to line 30.
-- Change `Config.Connection` to `Config.LocalConnection`.
-- Run these commands:
-    ```bash
-    cd api
-    dotnet ef migrations add InitialCreate
-    dotnet ef database update
-    ```
-- Change the Connection back to `Config.Connection`.
+1. Migrate and Update Database
+```bash
+cd api
+dotnet ef migrations add InitialCreate
+dotnet ef database update
+```
 
 
 ## Documentation
@@ -68,7 +64,6 @@ This is my first time creating an ASP.NET Core API. I learned to use EntityFrame
 
 
 ## Known Issues
-- The setup process requires manual changes in `Startup.cs` for database migrations.
 - Some endpoints are not fully tested and may contain bugs or don't work.
 - Currently the Docs and the API are not in sync. The API needs to be updated to match the Docs. (Missing optinal fields, etc.)
 

@@ -47,7 +47,7 @@ curl -H "Authorization: Bearer $ACCESS_TOKEN" http://localhost:5000/TodoNote/1
 
 * **Example (curl):**
 
-```
+```bash
 curl -X POST -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" -d '{ "Title": "Buy Groceries", "Content": "Milk, Bread, Eggs" }' http://localhost:5000/TodoNote
 ```
 
@@ -56,7 +56,7 @@ curl -X POST -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: applicat
 * **Info:** Updates an existing TodoNote.
 * **Requirements:**  
     * User must be authenticated.
-    * User must be authorized to update the TodoNote (ownership check enforced).
+    * Note must be owned by the authenticated user.
 * **Request Body:**
    ```json
   {
@@ -74,7 +74,7 @@ curl -X POST -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: applicat
 
 * **Example (curl):**
 
-```
+```bash
 curl -X PUT -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" -d '{ "Title": "Updated Title", "Content": "New Content" }' http://localhost:5000/TodoNote/1
 ```
 
@@ -96,7 +96,7 @@ curl -X PUT -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: applicati
 
 * **Example (curl):**
 
-```
+```bash
 curl -X DELETE -H "Authorization: Bearer $ACCESS_TOKEN" http://localhost:5000/TodoNote/1
 ```
 #### GetTodoNotes (GET /TodoNote/user/)
@@ -114,7 +114,7 @@ curl -X DELETE -H "Authorization: Bearer $ACCESS_TOKEN" http://localhost:5000/To
 
 * **Example (curl):**
 
-```
+```bash
 # Assuming you have a JWT access token stored in a variable named 'ACCESS_TOKEN'
 curl -H "Authorization: Bearer $ACCESS_TOKEN" http://localhost:5000/TodoNote/user/
 ```
@@ -122,7 +122,7 @@ curl -H "Authorization: Bearer $ACCESS_TOKEN" http://localhost:5000/TodoNote/use
 #### MarkCompleteTodoNote (PUT /TodoNote/{id}/markComplete)
 
 * **Info:** Marks a specific TodoNote as completed.
-* **Requirements:**  
+* **Requirements:**
     * User must be authenticated.
     * User must be authorized to update the TodoNote (ownership check enforced).
 * **Request Body:**
@@ -137,7 +137,7 @@ curl -H "Authorization: Bearer $ACCESS_TOKEN" http://localhost:5000/TodoNote/use
 
 * **Example (curl):**
 
-```
+```bash
 # Assuming you have a JWT access token stored in a variable named 'ACCESS_TOKEN'
 curl -X PUT -H "Authorization: Bearer $ACCESS_TOKEN" http://localhost:5000/TodoNote/1/markComplete
 ```
@@ -162,7 +162,7 @@ This controller manages user information.  All endpoints require authorization.
 
 * **Example (curl):**
 
-```
+```bash
 # Assuming you have a JWT access token stored in a variable named 'ACCESS_TOKEN'
 curl -H "Authorization: Bearer $ACCESS_TOKEN" http://localhost:5000/User
 ```
@@ -186,7 +186,7 @@ curl -H "Authorization: Bearer $ACCESS_TOKEN" http://localhost:5000/User
 
 * **Example (curl):**
 
-```
+```bash
 curl -X PUT -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: application/json" -d '{ "FirstName": "John", "LastName": "Doe" }' http://localhost:5000/User
 ```
 
@@ -205,7 +205,7 @@ curl -X PUT -H "Authorization: Bearer $ACCESS_TOKEN" -H "Content-Type: applicati
 
 * **Example (curl):**
 
-```
+```bash
 curl -X DELETE -H "Authorization: Bearer $ACCESS_TOKEN" http://localhost:5000/User
 ```
 
@@ -236,7 +236,7 @@ This controller handles user registration, login, and logout functionalities.
 
 * **Example (curl):**
 
-```
+```bash
 curl -X POST -H "Content-Type: application/json" -d '{ "FirstName": "John", "LastName": "Doe", "Email": "johndoe@example.com", "Password": "SecurePassword123" }' http://localhost:5000/Auth/register
 ```
 
@@ -258,7 +258,7 @@ curl -X POST -H "Content-Type: application/json" -d '{ "FirstName": "John", "Las
 
 * **Example (curl):**
 
-```
+```bash
 curl -X POST -H "Content-Type: application/json" -d '{ "Email": "johndoe@example.com", "Password": "SecurePassword123" }' http://localhost:5000/Auth/login
 ```
 
@@ -276,7 +276,7 @@ curl -X POST -H "Content-Type: application/json" -d '{ "Email": "johndoe@example
 
 * **Example (curl):**
 
-```
+```bash
 # Assuming you have a JWT access token stored in a variable named 'ACCESS_TOKEN'
 curl -X POST -H "Authorization: Bearer $ACCESS_TOKEN" http://localhost:5000/Auth/logout
 ```

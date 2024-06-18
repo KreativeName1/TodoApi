@@ -23,7 +23,7 @@ namespace TodoAPI.Controllers
       _connection = database;
       _authorizationService = authorizationService;
     }
-    private async Task<User> GetCurrentUser()
+    private User? GetCurrentUser()
     {
       string userid = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
       return _connection.Users.FirstOrDefault(u => u.Id == userid);
@@ -33,7 +33,7 @@ namespace TodoAPI.Controllers
     [HttpGet("{id}", Name = "GetTodoNote")]
     public async Task<IActionResult> Get(int id)
     {
-      User user = await GetCurrentUser();
+      User? user = GetCurrentUser();
       if (user == null) return Unauthorized();
       var todoNote = await _connection.TodoNotes.FindAsync(id);
       if (todoNote == null) return NotFound();
@@ -41,9 +41,9 @@ namespace TodoAPI.Controllers
     }
 
     [HttpPost(Name = "CreateTodoNote")]
-    public async Task<IActionResult> Post([FromBody] CreateModel todoNoteModel)
+    public IActionResult Post([FromBody] CreateModel todoNoteModel)
     {
-      User user = await GetCurrentUser();
+      User? user = GetCurrentUser();
       if (user == null) return Unauthorized();
 
       if (todoNoteModel == null) return BadRequest("Invalid client request");
@@ -68,20 +68,16 @@ namespace TodoAPI.Controllers
     }
 
     [HttpPut("{id}", Name = "UpdateTodoNote")]
-    public async Task<IActionResult> Put(int id, [FromBody] TodoNote todoNote)
+    public async Task<IActionResult> Put(int id, [FromBody] UpdateModel updateModel)
     {
-      User user = await GetCurrentUser();
+      User? user = GetCurrentUser();
       if (user == null) return Unauthorized();
       var existingTodoNote = await _connection.TodoNotes.FindAsync(id);
       if (existingTodoNote == null) return NotFound();
-
-      var authorized = await _authorizationService.AuthorizeAsync(User, existingTodoNote, new TodoNoteAuthorizationRequirement(user.Id));
-      if (!authorized.Succeeded) return Forbid();
-
-      existingTodoNote.Title = todoNote.Title;
-      existingTodoNote.Content = todoNote.Content;
-      existingTodoNote.DueDate = todoNote.DueDate;
-      existingTodoNote.IsComplete = todoNote.IsComplete;
+      existingTodoNote.Title = updateModel.Title ?? existingTodoNote.Title;
+      existingTodoNote.Content = updateModel.Content ?? existingTodoNote.Content;
+      existingTodoNote.DueDate = updateModel.DueDate ?? existingTodoNote.DueDate;
+      existingTodoNote.IsComplete = updateModel.IsComplete ?? existingTodoNote.IsComplete;
       existingTodoNote.UpdatedAt = DateTime.Now;
       _connection.SaveChanges();
       return Ok(existingTodoNote);
@@ -90,7 +86,7 @@ namespace TodoAPI.Controllers
     [HttpDelete("{id}", Name = "DeleteTodoNote")]
     public async Task<IActionResult> Delete(int id)
     {
-      User user = await GetCurrentUser();
+      User? user = GetCurrentUser();
       if (user == null) return Unauthorized();
 
       var todoNote = await _connection.TodoNotes.FindAsync(id);
@@ -105,7 +101,7 @@ namespace TodoAPI.Controllers
     [HttpGet("user/", Name = "GetTodoNotes")]
     public async Task<IActionResult> GetTodoNotes()
     {
-      User user = await GetCurrentUser();
+      User? user = GetCurrentUser();
       if (user == null) return Unauthorized();
 
       var todoNotes = await _connection.TodoNotes
@@ -114,11 +110,11 @@ namespace TodoAPI.Controllers
 
       return Ok(todoNotes);
     }
-  // mark a todo note as complete
+    // mark a todo note as complete
     [HttpPut("{id}/markComplete", Name = "MarkCompleteTodoNote")]
     public async Task<IActionResult> Complete(int id)
     {
-      User user = await GetCurrentUser();
+      User? user = GetCurrentUser();
       if (user == null) return Unauthorized();
 
       var todoNote = await _connection.TodoNotes.FindAsync(id);
@@ -136,4 +132,11 @@ public class CreateModel
   public string? Title { get; set; }
   public string? Content { get; set; }
   public DateTime? DueDate { get; set; }
+}
+public class UpdateModel
+{
+  public string? Title { get; set; }
+  public string? Content { get; set; }
+  public DateTime? DueDate { get; set; }
+  public bool? IsComplete { get; set; }
 }
