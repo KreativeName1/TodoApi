@@ -58,7 +58,7 @@ dotnet ef database update
 This is my first time creating an ASP.NET Core API. I learned to use EntityFramework and how to create an API with Token-based Authentication. I haven't tested all endpoints yet, and there may be issues that I will fix when i make the frontend. The API is not yet complete and will be updated in the future.
 
 ## Future Plans
-- Implementing the frontend using MAUI for Desktop, Vue.js for the Webpage and Java for the Android app.
+- Implementing the frontend for Desktop and Android
 - Expanding functionality for more features
 - Testing the Endpoints
 
