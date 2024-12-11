@@ -4,3 +4,8 @@ api/obj/
 api/Migrations/
 api/Config.cs
 .env
+.vs
+.vscode
+.config
+api/.idea
+api/Migrations
