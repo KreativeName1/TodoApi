@@ -9,3 +9,4 @@ api/Config.cs
 .config
 api/.idea
 api/Migrations
+TodoApi.csproj.user
